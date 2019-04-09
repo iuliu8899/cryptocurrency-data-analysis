@@ -17,11 +17,9 @@ import pandas
 
 inputs = pandas.read_csv('inputs.csv', header=None)
 outputs = pandas.read_csv('outputs.csv', header=None)
-tags = pandas.read_csv('tags.csv')
 transactions = pandas.read_csv('transactions.csv', header=None)
 inputs.columns = ["id", "tx_id", "sig_id", "output_id"]
 outputs.columns = ["id", "tx_id", "pk_id", "value"]
-tags.columns = ["type", "service", "pk_id"]
 transactions.columns = ['id', "block_id"]
 
 
@@ -293,7 +291,7 @@ answer_2_3()
 
 # ### 2.4 Heuristics
 
-# In[19]:
+# In[26]:
 
 
 # function used to find false positive
@@ -350,7 +348,7 @@ def answer_2_4():
     tx_removed_target_tid = related_inputs.loc[related_inputs['tx_id']!=target_tid]
     cluster_after_remove = find_false_positive(tx_removed_target_tid)
     print ("\nFalse Positive:")
-    print ("After remove transaction with tx_id 119993, original cluster with highest pk_id:",clusters.loc[clusters['cluster_id']==target_cid].index.max(),"and lowest pk_id:",clusters.loc[clusters['cluster_id']==target_cid].index.min(),"(total number of keys:",len(clusters.loc[clusters['cluster_id']==target_cid].index),") would be clustered as two large group and within that number of keys would be",cluster_after_remove['cluster_id'].value_counts().values,".")
+    print ("After remove transaction with tx_id 119993, original cluster with highest pk_id:",clusters.loc[clusters['cluster_id']==target_cid].index.max(),"and lowest pk_id:",clusters.loc[clusters['cluster_id']==target_cid].index.min(),"(total number of keys: "+str(len(clusters.loc[clusters['cluster_id']==target_cid].index))+") would be clustered as two large group and within that number of keys would be",cluster_after_remove['cluster_id'].value_counts().values,".")
     print ("i.e. transaction 119993 was trying to merge two large cluster, and this 'merging' transaction only happened once.")
     print ("The input entries in transaction 119993:")
     print (related_inputs.loc[related_inputs['tx_id']==target_tid].set_index('id'))
@@ -363,26 +361,108 @@ def answer_2_4():
     target_tid2 = 52070
     print ("In transaction "+str(target_tid1)+", there are 168 inputs and 2 outputs. It seems like one entity collects his owned bitcoins together to pay for one recipient and one collection (change) address that he controled.")
     print ("The change address (pk_id: "+str(target_pkid)+") only happened twice: one in the output of transaction "+str(target_tid1)+" for collection (change), another one for spending as a input in transaction "+str(target_tid2)+".")
-    print ("In clustering, this public key would be clustered as a distinct group (cluster_id: "+str(target_cid1)+") from the large entity (cluster_id: "+str(target_cid2)+") because it only happened one time as the input alone.")
+    print ("The change address should be clustered same as inputs since they are all controled by same entity. But in multi-input clustering, this public key would be clustered as a distinct group (cluster_id: "+str(target_cid1)+") from the large entity (cluster_id: "+str(target_cid2)+") because it only happened one time as the input alone.")
     print ("(cluster_id can be seen in the generated clusters.csv file)")
     print ("\nWhat strategy could you use to make your clustering heuristic more accurate?")
-    print ("1. Take extra care about some transactions happened less time but \"trying\" to merge two large clusters. (e.g. above false positive)")
-    print ("2. Take consideration about the output of one transaction, the change address in output should be clustered to the same group with the input. (e.g. above false negative)")
+    print ("1. Take extra care about some transactions happened less time but \"trying\" to merge two large clusters. (e.g. false positive above)")
+    print ("2. Take consideration about the output of one transaction, the change address in output should be clustered to the same group with the input. (e.g. false negative above)")
 
 
-# In[20]:
+# In[27]:
 
 
 answer_2_4()
 
 
 # ## 3 Tagging and tracking
+# ### associate both individual keys and larger clusters with real entities
+
+# In[21]:
+
+
+def get_tags():
+    tags = pandas.read_csv('tags.csv')
+    pk_id_grouped_UTXOs_dict = UTXOs.groupby('pk_id')['value'].sum()
+    pk_id_grouped_UTXOs = pandas.DataFrame({'pk_id':pk_id_grouped_UTXOs_dict.index,'value':pk_id_grouped_UTXOs_dict.values}).set_index('pk_id')
+    clusters_UTXOs = pandas.merge(clusters,pk_id_grouped_UTXOs,left_index=True,right_index=True,how='inner')
+    clusters_UTXOs = clusters_UTXOs.groupby('cluster_id')['value'].sum()
+    clusters_UTXOs = pandas.DataFrame({'cluster_id':clusters_UTXOs.index,'UTXO_value':clusters_UTXOs.values})
+    tags = pandas.merge(tags,clusters,right_index = True,left_on='pk_id',how='inner')
+    tags = pandas.merge(tags,clusters_UTXOs,on='cluster_id',how='left')
+    tags = tags.fillna(0)
+    return tags
+# columns = [type, name, pk_id, cluster_id, UTXO_value]
+tags = get_tags()
+
 
 # ### 3.1 Richest service
 
+# In[22]:
+
+
+def answer_3_1():
+    print ("------------------- 3.1 -------------------")
+    print ("Which tagged entity controls the most unspent bitcoins, and how many bitcoins does it control? Be careful to consider entities that may control multiple tagged clusters.")
+    temp_tags = tags.groupby('name')['UTXO_value'].sum()
+    print (temp_tags.idxmax(),int(temp_tags.max()))
+
+
+# In[23]:
+
+
+answer_3_1()
+
+
 # ### 3.2 Interactions
 
+# In[34]:
+
+
+def answer_3_2():
+    print ("------------------- 3.2 -------------------")
+    print ("How many transactions sent bitcoins directly from a (fictional) exchange to a (fictional) dark market?")
+    pk_id_exchange = clusters.loc[clusters['cluster_id'].isin(tags.loc[tags['type']=='Exchange'].cluster_id)].index
+    pk_id_darkmarket = clusters.loc[clusters['cluster_id'].isin(tags.loc[tags['type']=='DarkMarket'].cluster_id)].index
+    tx_from_exchange = inputs.loc[inputs['sig_id'].isin(pk_id_exchange)].tx_id.unique()
+    tx_from_exchange_to_dark_market = outputs.loc[(outputs['pk_id'].isin(pk_id_darkmarket)) & (outputs['tx_id'].isin(tx_from_exchange))]
+    print (len(tx_from_exchange_to_dark_market.tx_id.unique()))
+    print ("How many bitcoins in total were sent across these transactions?")
+    money_in = pandas.merge(inputs.loc[inputs['tx_id'].isin(tx_from_exchange_to_dark_market.tx_id.unique())][['tx_id','output_id']],outputs[['id','value']],left_on='output_id',right_on='id')[['tx_id','value']]
+    print ("input total:",money_in['value'].sum(),"bitcoins")
+    print ("sent to darkmarket:",tx_from_exchange_to_dark_market.value.sum(),"bitcoins")
+
+
+# In[35]:
+
+
+answer_3_2()
+
+
 # ### 3.3 Tracking techniques
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
 
 # In[ ]:
 
