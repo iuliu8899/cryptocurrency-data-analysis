@@ -2,7 +2,7 @@
 # coding: utf-8
 
 # # Cryptocurrency
-# #### Group Member: Weiqiu Liu, Ming Fang 
+# #### Group Member Candidate Number: ZWWD7, BXPM8
 
 # In[1]:
 
@@ -160,7 +160,7 @@ answer_1_4()
 # ## 2 Clustering
 # ### generate cluster dataframe
 
-# In[73]:
+# In[11]:
 
 
 def generate_clusters():
@@ -224,16 +224,16 @@ def generate_clusters():
     return clusters
 
 
-# In[74]:
+# In[12]:
 
 
 clusters = generate_clusters()
-clusters.to_csv("clusters1.csv")
+clusters.to_csv("clusters.csv")
 
 
 # ### 2.1 Specific cluster
 
-# In[67]:
+# In[13]:
 
 
 def answer_2_1():
@@ -247,7 +247,7 @@ def answer_2_1():
     print ("highest pk_id:", pk_id_in_cluster.max())
 
 
-# In[68]:
+# In[14]:
 
 
 answer_2_1()
@@ -255,7 +255,7 @@ answer_2_1()
 
 # ### 2.2 Biggest cluster
 
-# In[41]:
+# In[15]:
 
 
 def answer_2_2():
@@ -269,7 +269,7 @@ def answer_2_2():
     print ("highest pk_id:",temp.loc[temp['cluster_id']==cluster_id].index.max())
 
 
-# In[42]:
+# In[16]:
 
 
 answer_2_2()
@@ -277,7 +277,7 @@ answer_2_2()
 
 # ### 2.3 Richest cluster
 
-# In[43]:
+# In[17]:
 
 
 def answer_2_3():
@@ -298,7 +298,7 @@ def answer_2_3():
     print ("tx_id:",tx.idxmax(),"value",tx.max())
 
 
-# In[44]:
+# In[18]:
 
 
 answer_2_3()
@@ -306,7 +306,7 @@ answer_2_3()
 
 # ### 2.4 Heuristics
 
-# In[45]:
+# In[19]:
 
 
 # function used to find false positive
@@ -383,7 +383,7 @@ def answer_2_4():
     print ("2. Take consideration about the output of one transaction, the change address in output should be clustered to the same group with the input. (e.g. false negative above)")
 
 
-# In[46]:
+# In[20]:
 
 
 answer_2_4()
@@ -430,7 +430,7 @@ answer_3_1()
 
 # ### 3.2 Interactions
 
-# In[34]:
+# In[24]:
 
 
 def answer_3_2():
@@ -444,10 +444,10 @@ def answer_3_2():
     print ("How many bitcoins in total were sent across these transactions?")
     money_in = pandas.merge(inputs.loc[inputs['tx_id'].isin(tx_from_exchange_to_dark_market.tx_id.unique())][['tx_id','output_id']],outputs[['id','value']],left_on='output_id',right_on='id')[['tx_id','value']]
     print ("input total:",money_in['value'].sum(),"bitcoins")
-    print ("sent to darkmarket:",tx_from_exchange_to_dark_market.value.sum(),"bitcoins")
+    print ("received by darkmarket:",tx_from_exchange_to_dark_market.value.sum(),"bitcoins")
 
 
-# In[35]:
+# In[25]:
 
 
 answer_3_2()

@@ -1,6 +1,6 @@
 
 # Cryptocurrency
-#### Group Member: Weiqiu Liu, Ming Fang 
+#### Group Member Candidate Number: ZWWD7, BXPM8
 
 
 ```python
@@ -270,7 +270,7 @@ def generate_clusters():
 
 ```python
 clusters = generate_clusters()
-clusters.to_csv("clusters1.csv")
+clusters.to_csv("clusters.csv")
 ```
 
 ### 2.1 Specific cluster
@@ -527,7 +527,7 @@ def answer_3_2():
     print ("How many bitcoins in total were sent across these transactions?")
     money_in = pandas.merge(inputs.loc[inputs['tx_id'].isin(tx_from_exchange_to_dark_market.tx_id.unique())][['tx_id','output_id']],outputs[['id','value']],left_on='output_id',right_on='id')[['tx_id','value']]
     print ("input total:",money_in['value'].sum(),"bitcoins")
-    print ("sent to darkmarket:",tx_from_exchange_to_dark_market.value.sum(),"bitcoins")
+    print ("received by darkmarket:",tx_from_exchange_to_dark_market.value.sum(),"bitcoins")
 ```
 
 
@@ -540,7 +540,7 @@ answer_3_2()
     271
     How many bitcoins in total were sent across these transactions?
     input total: 3721195000000 bitcoins
-    sent to darkmarket: 3584219000000 bitcoins
+    received by darkmarket: 3584219000000 bitcoins
 
 
 ### 3.3 Tracking techniques
