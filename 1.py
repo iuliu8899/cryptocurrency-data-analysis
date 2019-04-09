@@ -160,7 +160,7 @@ answer_1_4()
 # ## 2 Clustering
 # ### generate cluster dataframe
 
-# In[11]:
+# In[73]:
 
 
 def generate_clusters():
@@ -193,11 +193,26 @@ def generate_clusters():
                         continue
                     pk_id_list = get_all_related_pk_id(pk_id_related,pk_id_list)
         return pk_id_list
+    
+#     # traverse function to find all related publick keys with input pk_id, store and return them in pk_id_list
+#     def get_all_related_pk_id(pk_id,pk_id_list):
+#         pk_id_list = [pk_id]
+#         temp_pk_id_list = [pk_id]
+#         while True:
+#             tx_id_array = inputs.loc[inputs['sig_id'].isin(temp_pk_id_list),'tx_id'].unique()
+#             pk_id_array = inputs.loc[inputs['tx_id'].isin(tx_id_array),'sig_id'].unique()
+#             temp_pk_id_list = [x for x in pk_id_array if x not in pk_id_list]
+#             pk_id_list += temp_pk_id_list
+#             if len(temp_pk_id_list) != 0:
+#                 continue
+#             else:
+#                 return pk_id_list
+            
 
     # main loop to call get_all_related_pk_id() function
-    for pk_id in clusters.index:
+    for pk_id,row in clusters.iterrows():
         # if current pk_id has been assigned a cluster_id, it means it has already went through the recursion so no need to do it again
-        if clusters.loc[pk_id].cluster_id != 0:
+        if row.cluster_id != 0:
             continue
         # init a blank list
         pk_id_list = []
@@ -209,16 +224,16 @@ def generate_clusters():
     return clusters
 
 
-# In[12]:
+# In[74]:
 
 
 clusters = generate_clusters()
-clusters.to_csv("clusters.csv")
+clusters.to_csv("clusters1.csv")
 
 
 # ### 2.1 Specific cluster
 
-# In[13]:
+# In[67]:
 
 
 def answer_2_1():
@@ -232,7 +247,7 @@ def answer_2_1():
     print ("highest pk_id:", pk_id_in_cluster.max())
 
 
-# In[14]:
+# In[68]:
 
 
 answer_2_1()
@@ -240,7 +255,7 @@ answer_2_1()
 
 # ### 2.2 Biggest cluster
 
-# In[15]:
+# In[41]:
 
 
 def answer_2_2():
@@ -254,7 +269,7 @@ def answer_2_2():
     print ("highest pk_id:",temp.loc[temp['cluster_id']==cluster_id].index.max())
 
 
-# In[16]:
+# In[42]:
 
 
 answer_2_2()
@@ -262,7 +277,7 @@ answer_2_2()
 
 # ### 2.3 Richest cluster
 
-# In[17]:
+# In[43]:
 
 
 def answer_2_3():
@@ -283,7 +298,7 @@ def answer_2_3():
     print ("tx_id:",tx.idxmax(),"value",tx.max())
 
 
-# In[18]:
+# In[44]:
 
 
 answer_2_3()
@@ -291,7 +306,7 @@ answer_2_3()
 
 # ### 2.4 Heuristics
 
-# In[26]:
+# In[45]:
 
 
 # function used to find false positive
@@ -368,7 +383,7 @@ def answer_2_4():
     print ("2. Take consideration about the output of one transaction, the change address in output should be clustered to the same group with the input. (e.g. false negative above)")
 
 
-# In[27]:
+# In[46]:
 
 
 answer_2_4()
@@ -439,66 +454,6 @@ answer_3_2()
 
 
 # ### 3.3 Tracking techniques
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
 
 # In[ ]:
 

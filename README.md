@@ -236,11 +236,26 @@ def generate_clusters():
                         continue
                     pk_id_list = get_all_related_pk_id(pk_id_related,pk_id_list)
         return pk_id_list
+    
+#     # traverse function to find all related publick keys with input pk_id, store and return them in pk_id_list
+#     def get_all_related_pk_id(pk_id,pk_id_list):
+#         pk_id_list = [pk_id]
+#         temp_pk_id_list = [pk_id]
+#         while True:
+#             tx_id_array = inputs.loc[inputs['sig_id'].isin(temp_pk_id_list),'tx_id'].unique()
+#             pk_id_array = inputs.loc[inputs['tx_id'].isin(tx_id_array),'sig_id'].unique()
+#             temp_pk_id_list = [x for x in pk_id_array if x not in pk_id_list]
+#             pk_id_list += temp_pk_id_list
+#             if len(temp_pk_id_list) != 0:
+#                 continue
+#             else:
+#                 return pk_id_list
+            
 
     # main loop to call get_all_related_pk_id() function
-    for pk_id in clusters.index:
+    for pk_id,row in clusters.iterrows():
         # if current pk_id has been assigned a cluster_id, it means it has already went through the recursion so no need to do it again
-        if clusters.loc[pk_id].cluster_id != 0:
+        if row.cluster_id != 0:
             continue
         # init a blank list
         pk_id_list = []
@@ -255,7 +270,7 @@ def generate_clusters():
 
 ```python
 clusters = generate_clusters()
-clusters.to_csv("clusters.csv")
+clusters.to_csv("clusters1.csv")
 ```
 
 ### 2.1 Specific cluster
@@ -529,56 +544,6 @@ answer_3_2()
 
 
 ### 3.3 Tracking techniques
-
-
-```python
-
-```
-
-
-```python
-
-```
-
-
-```python
-
-```
-
-
-```python
-
-```
-
-
-```python
-
-```
-
-
-```python
-
-```
-
-
-```python
-
-```
-
-
-```python
-
-```
-
-
-```python
-
-```
-
-
-```python
-
-```
 
 
 ```python
