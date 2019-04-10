@@ -90,14 +90,13 @@ def answer_1_3():
     print("pk_id:", temp.idxmax(), "value:", temp.max())
     print ("Which public key acted as an output the most number of times, and how many times did it act as output?")
     count_pk = outputs['pk_id'].value_counts()
-    print ("pk_id:", count_pk.idxmax(), "value:", count_pk.max())
+    print ("pk_id:", count_pk.idxmax(), "times:", count_pk.max())
 
 
 # In[8]:
 
 
 answer_1_3()
-# outputs.loc[outputs['pk_id']==148105]
 
 
 # ### 1.4 Invalid transactions
@@ -295,7 +294,7 @@ def answer_2_3():
     cluster_with_highest_UTXO = clusters.loc[clusters['cluster_id']==cluster_id].index
     output_to_this_cluster = outputs.loc[outputs['pk_id'].isin(cluster_with_highest_UTXO)]
     tx = output_to_this_cluster.groupby('tx_id').value.sum()
-    print ("tx_id:",tx.idxmax(),"value",tx.max())
+    print ("tx_id:",tx.idxmax(),"value:",tx.max())
 
 
 # In[18]:
@@ -363,7 +362,7 @@ def answer_2_4():
     tx_removed_target_tid = related_inputs.loc[related_inputs['tx_id']!=target_tid]
     cluster_after_remove = find_false_positive(tx_removed_target_tid)
     print ("\nFalse Positive:")
-    print ("After remove transaction with tx_id 119993, original cluster with highest pk_id:",clusters.loc[clusters['cluster_id']==target_cid].index.max(),"and lowest pk_id:",clusters.loc[clusters['cluster_id']==target_cid].index.min(),"(total number of keys: "+str(len(clusters.loc[clusters['cluster_id']==target_cid].index))+") would be clustered as two large group and within that number of keys would be",cluster_after_remove['cluster_id'].value_counts().values,".")
+    print ("After removing transaction with tx_id 119993, original cluster with highest pk_id:",clusters.loc[clusters['cluster_id']==target_cid].index.max(),"and lowest pk_id:",clusters.loc[clusters['cluster_id']==target_cid].index.min(),"(total number of keys: "+str(len(clusters.loc[clusters['cluster_id']==target_cid].index))+") would be clustered as two large group and within that number of keys would be",cluster_after_remove['cluster_id'].value_counts().values,".")
     print ("i.e. transaction 119993 was trying to merge two large cluster, and this 'merging' transaction only happened once.")
     print ("The input entries in transaction 119993:")
     print (related_inputs.loc[related_inputs['tx_id']==target_tid].set_index('id'))
@@ -379,7 +378,7 @@ def answer_2_4():
     print ("The change address should be clustered same as inputs since they are all controled by same entity. But in multi-input clustering, this public key would be clustered as a distinct group (cluster_id: "+str(target_cid1)+") from the large entity (cluster_id: "+str(target_cid2)+") because it only happened one time as the input alone.")
     print ("(cluster_id can be seen in the generated clusters.csv file)")
     print ("\nWhat strategy could you use to make your clustering heuristic more accurate?")
-    print ("1. Take extra care about some transactions happened less time but \"trying\" to merge two large clusters. (e.g. false positive above)")
+    print ("1. Take extra care about some transactions happened less time but trying to \"merge\" two large clusters. (e.g. false positive above)")
     print ("2. Take consideration about the output of one transaction, the change address in output should be clustered to the same group with the input. (e.g. false negative above)")
 
 
@@ -451,18 +450,4 @@ def answer_3_2():
 
 
 answer_3_2()
-
-
-# ### 3.3 Tracking techniques
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
 
